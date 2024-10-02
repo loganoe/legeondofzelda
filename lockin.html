@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lock in bro</title>
+    <style>
+        body {
+            text-align: center;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 150%;
+        }
+        button {
+            padding: 30px;
+            border-radius: 10px;
+            font-size: 22px;
+            cursor: pointer;
+            transition: .2s;
+        }
+        button:hover {
+            padding: 33px;
+            transition: .2s; 
+        }
+        #modern {
+            background-color: rgb(167, 10, 10);
+            color: white;
+        }
+        #geo {
+            background-color: skyblue;
+        }
+        #comp {
+            background-color: orange;
+        }
+        #found {
+            background-color: lightgreen; 
+        }
+        #spanish {
+            background-color: beige; 
+        }
+        input {
+            font-size: 15px;
+            padding: 25px;
+            border-radius: 20px; 
+        }
+    </style>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Anti-Procrastinator</h1>
+    <h2>Select a class</h1>
+        <button onclick="modern()" id="modern">Modern History</button>
+        <button onclick="geo()" id="geo">Geometry</button>
+        <button onclick="comp()" id="comp">Comp and Ana</button>
+        <button onclick="foundations()" id="found">Foundations</button>
+        <button onclick="spanish()" id="spanish">Spanish 1</button>
+        <br>
+        <br><br>
+        <h3> How to use the Anti-Procrastinator</h3>
+        <br>
+
+        <p>  
+            Under any circumstances, you are not to open any tabs or use any apps than the ones automatically opened by the buttons on this page, and this tab. For reasearch, you may use Google, but no doing anything off task. Also no bike-shedding. If you don't follow these guidelines, there is no punishment (maybe), only that you will get horrible grades because you forgot to turn in your homework. Talking to others is ok, but enter the number of words you say into the input field. (yes this has to be exact.)
+        </p>
+        Num. of words (enter to submit at end of each day). <input id="suchpro"></input>
+<br>
+<p>Productivity graph: </p>
+<canvas id="myChart" width="400" height="200"></canvas>
+        <script >
+            var buffer = 0;
+            document.getElementById("suchpro").addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    buffer += Number(document.getElementById("suchpro").value);
+                    let hre = new Date();
+                    localStorage.setItem((hre.getUTCDate()).toString(), buffer.toString()); 
+                }
+            });
+            let muchpro = [10, 20, 30];
+
+   
+            let i = 1;
+                while (i <= 31) {
+                    if (localStorage.getItem(i)) {
+                    muchpro.push(Number(localStorage.getItem(i)));
+                    i++;
+                    } else {
+                        i++;
+                    }
+                }   
+            
+            function modern() {
+                window.open("https://google.com");
+                window.open("https://www.office.com/launch/Word/");
+                window.open("https://outlook.office.com/mail/");
+                window.open("https://teams.microsoft.com/v2/?clientexperience=t2");
+                window.open("https://davidsongifted.instructure.com/courses/1055/modules");
+
+            }
+            function geo() {
+                var he = confirm("Did you forget your packet? Ok if yes, cancel if no.");
+                if (confirm == true) {
+                    window.open("https://davidsongifted.instructure.com/courses/1084/modules");
+                } else {
+                    alert("Then why are you using your computer?");
+                    while (1 == 1) {
+                        window.open("https://google.com" ,"_blank");
+                    }
+                }
+            }
+            function comp() {
+                window.open("https://google.com");
+                window.open("https://www.office.com/launch/Word/");
+                window.open("https://outlook.office.com/mail/");
+                window.open("https://teams.microsoft.com/v2/?clientexperience=t2");
+                window.open("https://davidsongifted.instructure.com/courses/1186/modules");
+            }
+            function foundations() {
+                window.open("https://google.com");
+                window.open("https://www.office.com/launch/Word/");
+                window.open("https://outlook.office.com/mail/");
+                window.open("https://teams.microsoft.com/v2/?clientexperience=t2");
+                window.open("https://www.office.com/launch/Excel/");
+                window.open("https://davidsongifted.instructure.com/courses/1112/modules");
+                window.open("https://davidsongifted.instructure.com/courses/1112/pages/measuring-units-precision-notation-repetition-uncertainty-updated?module_item_id=109785")
+
+            }
+            function spanish() {
+                window.open("https://google.com");
+                window.open("https://www.office.com/launch/Word/");
+                window.open("https://outlook.office.com/mail/");
+                window.open("https://teams.microsoft.com/v2/?clientexperience=t2");
+                window.open("https://davidsongifted.instructure.com/courses/1139/modules");
+            }
+            const spacing = 2; // Your desired spacing
+
+// Generate x values
+const xValues = muchpro.map((_, index) => index * spacing);
+
+const ctx = document.getElementById('myChart').getContext('2d');
+const myChart = new Chart(ctx, {
+    type: 'line', // Line chart
+    muchpro: {
+        labels: xValues,
+        muchprosets: [{
+            label: 'My muchpro',
+            muchpro: muchpro,
+            borderColor: 'rgba(75, 192, 192, 1)', // Line color
+            backgroundColor: 'rgba(75, 192, 192, 0.2)', // Fill color
+            fill: false, // Set to true if you want the area under the line filled
+            pointRadius: 5, // Size of points
+            tension: 0.1 // Smooth the line
+        }]
+    },
+    options: {
+        scales: {
+            x: {
+                title: {
+                    display: true,
+                    text: 'X Axis (Equally Spaced)'
+                }
+            },
+            y: {
+                title: {
+                    display: true,
+                    text: 'Y Axis'
+                },
+                min: Math.min(...muchpro) - 5,
+                max: Math.max(...muchpro) + 5
+            }
+        }
+    }
+});
+        </script>
+
+
+</body>
+</html>

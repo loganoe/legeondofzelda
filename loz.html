@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Courier New', Courier, monospace
+        }
+        #background {
+            position: absolute;
+            z-index: -99;
+            top: 200px;
+            left: 0px;
+        }
+        #player {
+            position: absolute;
+            z-index: 99;
+            top: 200px;
+            left: 0px; 
+        }
+
+    </style>
+</head>
+<body onload="credits()">
+    <canvas width = "1000" height="200" id="GUI">
+
+    </canvas>
+    <canvas width="1000" height = "750" id="player"></canvas>
+    <canvas width="1000" height = "750" id="background"> </canvas>
+    <script defer>
+
+        function credits() {
+            // alert("Credit for all sprites and background goes to Mister Mike, at https://www.spriters-resource.com/nes/legendofzelda/sheet/119176/")
+        }
+
+
+        
+        setInterval(tick, 10);
+        
+var lives = 3;
+var rupees = 0;
+var keys = 0; 
+var orbs = 0;
+var playerx = 500;
+var playery = 500; 
+var movingup = false;
+var movingdown = false;
+var movingright = false;
+var movingleft = false;
+var footindex = false; 
+var didmovelast = false;
+var q = 0; 
+// defensive commenting: 
+// detect the keypresses (yea it is inefficient but i have plenty of storage to work with, ok)
+        window.onkeydown = function (e) {
+            if (e.key === "w") {
+                console.log("muchup");
+                movingup = true;
+                movingleft = false;
+                movingdown = false;
+                movingright = false;
+            }
+            if (e.key === "a") {
+                console.log("muchleft");
+                movingup = false;
+                movingleft = true;
+                movingdown = false;
+                movingright = false;
+            }
+            if (e.key === "d") {
+                console.log("muchright");
+                movingup = false;
+                movingleft = false;
+                movingdown = false;
+                movingright = true;
+            } 
+            if (e.key === "s") {
+                console.log("muchdown");
+                movingup = false;
+                movingleft = false;
+                movingdown = true;
+                movingright = false;
+            }
+        }
+        window.onkeyup = function (e) {
+            if (e.key === "w") {
+                console.log("muchup");
+                movingup = false;
+                movingleft = false;
+                movingdown = false;
+                movingright = false;
+            }
+            if (e.key === "a") {
+                console.log("muchleft");
+                movingup = false;
+                movingleft = false;
+                movingdown = false;
+                movingright = false;
+            }
+            if (e.key === "d") {
+                console.log("muchright");
+                movingup = false;
+                movingleft = false;
+                movingdown = false;
+                movingright = false;
+            } 
+            if (e.key === "s") {
+                console.log("muchdown");
+                movingup = false;
+                movingleft = false;
+                movingdown = false;
+                movingright = false;
+            }
+        }
+        var magic = 1;
+        // preload all of them images
+        var heart = new Image();
+        heart.src = "backgrounds/heart.png";
+        var icons = new Image();
+        icons.src = "backgrounds/icons.png";
+        var linkdown1 = new Image();
+        linkdown1.src = "backgrounds/front1.png";
+        var linkdown2 = new Image();
+        linkdown2.src = "backgrounds/front2.png";
+        var linkup1 = new Image();
+        linkup1.src = "backgrounds/linkup1.png";
+        var linkup2 = new Image();
+        linkup2.src = "backgrounds/linkup2.png";
+        var linkright1 = new Image();
+        linkright1.src = "backgrounds/linkright1.png";
+        var linkright2 = new Image();
+        linkright2.src = "backgrounds/linkright2.png";
+        var linkl1 = new Image();
+        linkl1.src = "backgrounds/linkleft1.png";
+        var linkl2 = new Image();
+        linkl2.src = "backgrounds/linkleft2.png";
+        const pcanvas = document.getElementById("player");
+        const pctx = pcanvas.getContext("2d");
+        linkdown1.onload = function() {
+            pctx.drawImage(linkdown1, playerx, playery, 64, 64);
+        } 
+        // The tick update loop. It has the answer to all questions. 
+        function tick() {
+
+               // init them canvases         
+            const bgcanvas = document.getElementById("background");
+        const bctx = bgcanvas.getContext("2d");
+        const guicanvas = document.getElementById("GUI");
+        const gctx = guicanvas.getContext("2d");
+        const pcanvas = document.getElementById("player");
+        const pctx = pcanvas.getContext("2d");
+        // just delete the previous frame so u can redraw all the moving elements.
+        pctx.clearRect(0, 0, 1000, 7000)
+            // change links foot every 5 ticks if he is moving:
+
+                q++; 
+                console.log(q);
+                if (q == 15) {
+                    footindex = !footindex; 
+                    q = 0;
+
+                }
+            
+            // update player pos (yay no gravity physics to deal with!)
+
+            if (movingdown) {
+                playery += 2;
+                didmovelast = true;
+            } else if (movingleft) {
+                playerx -= 2;
+                didmovelast = true;
+            } else if (movingright) {
+                playerx += 2;
+                didmovelast = true;
+            } else if (movingup) {
+                playery -= 2;
+                didmovelast = true;
+            } else {
+                didmovelast = true;
+            }
+            console.log(footindex);
+            // render link (the player canvas is for all non-static objects)
+
+            if (footindex) {
+                magic = 1;
+            } else {
+                magic = 2;
+            }
+            if (movingdown) {
+
+
+                pctx.imageSmoothingEnabled = false; 
+                if (magic == 1) {
+                pctx.drawImage(linkdown1, playerx, playery, 64, 64);
+                } else if (magic == 2) {
+                    pctx.drawImage(linkdown2, playerx, playery, 64, 64);
+                }
+                
+            } else if (movingup) {
+                pctx.imageSmoothingEnabled = false; 
+                if (magic == 1) {
+                pctx.drawImage(linkup1, playerx, playery, 64, 64);
+                } else if (magic == 2) {
+                    pctx.drawImage(linkup2, playerx, playery, 64, 64);
+                }
+            } else if (movingright) {
+                pctx.imageSmoothingEnabled = false; 
+                if (magic == 1) {
+                pctx.drawImage(linkright1, playerx, playery, 64, 64);
+                } else if (magic == 2) {
+                    pctx.drawImage(linkright2, playerx, playery, 64, 64);
+                }
+            } else if (movingleft) {
+
+                pctx.imageSmoothingEnabled = false; 
+                if (magic == 1) {
+                pctx.drawImage(linkl1, playerx, playery, 64, 64);
+                } else if (magic == 2) {
+                    pctx.drawImage(linkl2, playerx, playery, 64, 64);
+                }
+            } else {
+                
+                pctx.imageSmoothingEnabled = false; 
+
+                pctx.drawImage(linkdown1, playerx, playery, 64, 64);
+
+                
+            }
+
+
+            // draw background 
+            var bg =  new Image();
+            bg.src = "backgrounds/bg1.png";
+            // ok yeah yeah this is technically not synchronus with the rest of the tick, but its just visuals, so its fine. 
+            bg.onload = function () {
+                bctx.imageSmoothingEnabled = false;
+                bctx.drawImage(bg, 0, 0, 1000, 750); 
+            }   
+            // draw GUI and stuff yeah. 
+            gctx.fillStyle = "black";
+            gctx.fillRect(0, 0, 1000, 200);
+            gctx.beginPath();
+            gctx.lineWidth = "4";
+            gctx.strokeStyle = "blue"; 
+            gctx.rect(300, 50, 80, 110);
+            gctx.stroke();
+            gctx.beginPath();
+            gctx.lineWidth = "4";
+            gctx.strokeStyle = "blue"; 
+            gctx.rect(410, 50, 80, 110);
+            gctx.stroke();
+            gctx.font = "50px Courier New";
+            gctx.fillStyle = "white";
+            gctx.fillText("B", 320, 62)
+            gctx.fillText("A", 430, 62)
+            gctx.fillStyle = "red";
+            gctx.fillText("LIFE", 670, 62);
+
+
+                gctx.imageSmoothingEnabled = false;
+                switch (lives) {
+                    case 0:
+                        gameover();
+                        break;
+                    case 1:
+                        gctx.drawImage(heart, 620, 85, 70, 70);
+                        break;
+                    case 2:
+                        gctx.drawImage(heart, 620, 85, 70, 70);
+                        gctx.drawImage(heart, 700, 85, 70, 70);
+                        break;
+                    case 3:
+                        gctx.drawImage(heart, 620, 85, 70, 70);
+                        gctx.drawImage(heart, 700, 85, 70, 70);
+                        gctx.drawImage(heart, 780, 85, 70, 70);
+                        break;
+                    default: 
+                        alert("yea that's not right...");
+                }
+
+            
+            // keizou if you are reading this... idk...
+
+            gctx.fillStyle = "white";
+            gctx.font = "40px Courier New";
+
+
+                gctx.imageSmoothingEnabled = false; 
+                gctx.drawImage(icons, 50, 10, 40, 180);
+                gctx.fillText("X"+rupees.toString(), 95, 67);
+                gctx.fillText("X"+keys.toString(), 95, 130);
+                gctx.fillText("X"+orbs.toString(), 95, 167);
+            
+        }
+    </script>
+</body>
+</html>
