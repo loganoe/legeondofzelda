@@ -30,6 +30,12 @@
     </canvas>
     <canvas width="1000" height = "750" id="player"></canvas>
     <canvas width="1000" height = "750" id="background"> </canvas>
+    <br><br>    <br><br>    <br><br>    <br><br>    <br><br>    <br><br>    <br><br>    <br><br>     <br><br>    <br><br>    <br><br>    <br><br>    <br><br>    <br><br>    <br><br>    <br><br>    <br><br>    <br><br>    <br><br>    <br><br>    <br><br>    <br><br>    <br><br>    <br><br>    <br><br>    <br><br>    <br><br>    <br><br>
+    <audio controls autoplay loop aria-hidden="true" id="gyatt">
+        <source src="Overworld_Theme.mp3" type="audio/mpeg">
+
+
+    </audio>
     <script defer>
         // how to render levels:
 
@@ -42,8 +48,9 @@ ctx.fillRect(0, 0, canvas.getAttribute("height"), canvas.getAttribute("width"));
 
 //report the mouse position on click
 canvas.addEventListener("click", function (evt) {
-    var mousePos = getMousePos(canvas, evt);
-    alert(mousePos.x + ',' + mousePos.y);
+   // var mousePos = getMousePos(canvas, evt);
+   document.getElementById("gyatt").play();
+    //alert(mousePos.x + ',' + mousePos.y);
 }, false);
 
 //Get Mouse Position
@@ -61,7 +68,8 @@ function getMousePos(canvas, evt) {
 
         
         setInterval(tick, 8);
-        
+var swordx = 0; 
+var swordy = 0;       
 var lives = 3;
 var rupees = 0;
 var keys = 0; 
@@ -76,10 +84,20 @@ var footindex = false;
 var didmovelast = false;
 var q = 0; 
 var clevel = 1;
-
+var swordon = false;
 // defensive commenting: 
 // detect the keypresses (yea it is inefficient but i have plenty of storage to work with, ok)
         window.onkeydown = function (e) {
+            if (e.key === "z") {
+                if (swordcol == true) {
+                swordon = true;
+                swordx = playerx;
+                swordy = playery;
+                }
+            }
+            if (e.key === "p" ) {
+                location.href = "https://davidsongifted.instructure.com";
+            }
             if (e.key === "w") {
                 console.log("muchup");
                 movingup = true;
@@ -175,6 +193,11 @@ var clevel = 1;
         oldman.src = "backgrounds/oldman.png";
         var sword =  new Image();
         sword.src = "backgrounds/sword.png";
+        var en1 =  new Image();
+        en1.src = "backgrounds/mog.jpg";
+        var en2 =  new Image();
+        en2.src = "backgrounds/muchmega.jpg";
+
         const pcanvas = document.getElementById("player");
         const pctx = pcanvas.getContext("2d");
         linkdown1.onload = function() {
@@ -203,6 +226,7 @@ class Hitbox {
     }
 }
 
+var eindex;
 
 let obstacles = [];
 const levels = {
@@ -225,6 +249,8 @@ const levels = {
     new Hitbox(873, 474, 57, 276),
     new Hitbox(0, 615, 1000, 135),
     new Hitbox(930, 409, 70, 591),
+    new Hitbox(0, 0, 1000, 2, "trig2"),
+    new Hitbox(0, 0, 2, 1000, "trig2")
     ],
     3: [
         new Hitbox(475, 426, 20, 50, "sword")
@@ -250,9 +276,11 @@ function checkCollision(x, y, width, height) {
     }
     return false;
 }
+
         // The tick update loop. It has the answer to all questions. 
         function tick() {
             // initial level load:
+
             loadLevel(clevel);
 
             
@@ -291,7 +319,7 @@ function checkCollision(x, y, width, height) {
     } else if (movingup) {
         newY -= 2;
     }
-    
+        
     // check for collision before updating the player's position
     const collisionResult = checkCollision(newX, newY, 64, 64);
         // Handle collision result
@@ -323,7 +351,14 @@ function checkCollision(x, y, width, height) {
         playerx = newX;
         playery = newY;
     }
-
+    if (swordon == true) {
+        if (swordx > 1000 || swordx < 0 || swordy > 750 || swordy < 0) {
+            swordon = false;
+        } else {
+            swordy -= 4; 
+            pctx.drawImage(sword, swordx,swordy, 30, 80);
+        }
+    }
             // render link (the player canvas is for all non-static objects)
 
             if (footindex) {
@@ -382,6 +417,9 @@ function checkCollision(x, y, width, height) {
             gctx.lineWidth = "4";
             gctx.strokeStyle = "blue"; 
             gctx.rect(300, 50, 80, 110);
+            if (swordcol) {
+                gctx.drawImage(sword, 320, 70, 34, 80);
+            }
             gctx.stroke();
             gctx.beginPath();
             gctx.lineWidth = "4";
@@ -482,6 +520,7 @@ function checkCollision(x, y, width, height) {
                 bctx.font = "29px Courier New";
                 bctx.fillText("We have determined that you are a ", 140, 223);
                 bctx.fillText("true sigma worthy of this sword w rizz", 140, 253);
+
           
                 if (swordcol != true) {
                     pctx.drawImage(sword, 480, 431, 20, 50);
