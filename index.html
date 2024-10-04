@@ -60,7 +60,7 @@ function getMousePos(canvas, evt) {
 
 
         
-        setInterval(tick, 10);
+        setInterval(tick, 8);
         
 var lives = 3;
 var rupees = 0;
@@ -171,6 +171,10 @@ var clevel = 1;
         bg.src = "backgrounds/bg1.png";
         var bg2 =  new Image();
         bg2.src = "backgrounds/bg2.png";
+        var oldman =  new Image();
+        oldman.src = "backgrounds/oldman.png";
+        var sword =  new Image();
+        sword.src = "backgrounds/sword.png";
         const pcanvas = document.getElementById("player");
         const pctx = pcanvas.getContext("2d");
         linkdown1.onload = function() {
@@ -178,11 +182,12 @@ var clevel = 1;
         } 
 //using fancy classes and arrays for hitboxes
 class Hitbox {
-    constructor(x, y, width, height) {
+    constructor(x, y, width, height, name = null) {  // 'name' is optional
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
+        this.name = name;  // optional name attribute
     }
 
     contains(px, py) {
@@ -198,6 +203,7 @@ class Hitbox {
     }
 }
 
+
 let obstacles = [];
 const levels = {
     1: [
@@ -208,11 +214,20 @@ const levels = {
     new Hitbox(560, 0, 440, 340), 
     new Hitbox(0, 410, 115, 340),
     new Hitbox(0, 615, 1000, 135),
-    new Hitbox(870, 410, 130, 340)
+    new Hitbox(870, 410, 130, 340),
+    new Hitbox(264, 94, 10, 10, "trig1"),
+    new Hitbox(0, 0, 1000, 2, "trig2"),
+    new Hitbox(998, 0, 2, 1000, "trig2")
     ],
     2: [
-        new Hitbox(150, 150, 150, 150),
-        new Hitbox(500, 300, 120, 80)
+    new Hitbox(875, 0, 60, 270),
+    new Hitbox(935, 0, 60, 335),
+    new Hitbox(873, 474, 57, 276),
+    new Hitbox(0, 615, 1000, 135),
+    new Hitbox(930, 409, 70, 591),
+    ],
+    3: [
+        new Hitbox(475, 426, 20, 50, "sword")
     ]
 };
 // yaya simple level handling: 
@@ -224,13 +239,13 @@ function changeLevel(newLevel) {
     currentLevel = newLevel;
     loadLevel(newLevel);
 }
-
-
+var hascollided = false;
+var swordcol = false; 
 function checkCollision(x, y, width, height) {
     const playerHitbox = new Hitbox(x, y, width, height);
     for (let i = 0; i < obstacles.length; i++) {
         if (playerHitbox.overlaps(obstacles[i])) {
-            return true;
+            return obstacles[i].name || true;  // Return the name if it exists, otherwise true
         }
     }
     return false;
@@ -276,9 +291,35 @@ function checkCollision(x, y, width, height) {
     } else if (movingup) {
         newY -= 2;
     }
-
+    
     // check for collision before updating the player's position
-    if (!checkCollision(newX, newY, 64, 64)) {
+    const collisionResult = checkCollision(newX, newY, 64, 64);
+        // Handle collision result
+        if (collisionResult) {
+            console.log("can confirm");
+
+        if (typeof collisionResult === 'string') {
+            if (collisionResult == 'trig1') {
+                clevel = 3; 
+                playerx = 450;
+                playery = 630;
+            } else if (collisionResult == 'trig2') {
+                alert("you can't go there...It's 100% totally not because we haven't made the level yet fr fr. If you question this message, you have L rizz.")
+                playerx = 500;
+                playery = 350;
+            } else if (collisionResult == 'sword' && hascollided != true) {
+                hascollided = true;
+                swordcol = true;
+            } else if (collisionResult == 'sword' && hascollided) {
+                playerx = newX;
+                playery = newY;
+            }
+            colbefore = true;
+        } else {
+
+        }
+    } else {
+        // No collision, update player position
         playerx = newX;
         playery = newY;
     }
@@ -377,7 +418,7 @@ function checkCollision(x, y, width, height) {
                 }
 
             
-            // keizou if you are reading this... idk...
+            // keizou if you are reading this... your not a true sigma
 
             gctx.fillStyle = "white";
             gctx.font = "40px Courier New";
@@ -394,6 +435,7 @@ function checkCollision(x, y, width, height) {
                 case 1:
                     playerx = 950;
                     clevel = 2; 
+                    playery = 340; 
                     renderLevel();
 
                     break;
@@ -411,19 +453,40 @@ function checkCollision(x, y, width, height) {
                     break;
                 default:
                     alert("something broke.");
+                    
+            }
+        } else if ( playery >= 700) {
+            switch (clevel) {
+                case 3:
+                    playerx = 259;
+                    playery = 168;
+                    clevel = 1;
+                    break;
             }
         }
         switch(clevel) {
             case 1:
                 bctx.imageSmoothingEnabled = false;
                 bctx.drawImage(bg, 0, 0, 1000, 750);
-                console.log("sigma");
+
                 break;
             case 2:
                 bctx.imageSmoothingEnabled = false;
                 bctx.drawImage(bg2, 0, 0, 1000, 750);
-                console.log("no rizz");
+
                 break;
+            case 3:
+                bctx.imageSmoothingEnabled = false;
+                bctx.drawImage(oldman, 0, 0, 1000, 750);
+                bctx.fillStyle = "white";
+                bctx.font = "29px Courier New";
+                bctx.fillText("We have determined that you are a ", 140, 223);
+                bctx.fillText("true sigma worthy of this sword w rizz", 140, 253);
+          
+                if (swordcol != true) {
+                    pctx.drawImage(sword, 480, 431, 20, 50);
+                }
+                
         }
         }
     </script>
