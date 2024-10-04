@@ -31,9 +31,31 @@
     <canvas width="1000" height = "750" id="player"></canvas>
     <canvas width="1000" height = "750" id="background"> </canvas>
     <script defer>
+        // how to render levels:
 
+        // development stuff, doesn't matter:
+//set up the canvas and context
+var canvas = document.getElementById("player");
+var ctx = canvas.getContext("2d");
+ctx.fillStyle = "rgba(1,1,1,1)";
+ctx.fillRect(0, 0, canvas.getAttribute("height"), canvas.getAttribute("width"));
+
+//report the mouse position on click
+canvas.addEventListener("click", function (evt) {
+    var mousePos = getMousePos(canvas, evt);
+    alert(mousePos.x + ',' + mousePos.y);
+}, false);
+
+//Get Mouse Position
+function getMousePos(canvas, evt) {
+    var rect = canvas.getBoundingClientRect();
+    return {
+        x: evt.clientX - rect.left,
+        y: evt.clientY - rect.top
+    };
+}
         function credits() {
-            // alert("Credit for all sprites and background goes to Mister Mike, at https://www.spriters-resource.com/nes/legendofzelda/sheet/119176/")
+            console.log("Credit for all sprites and background goes to Mister Mike, at https://www.spriters-resource.com/nes/legendofzelda/sheet/119176/")
         }
 
 
@@ -53,6 +75,8 @@ var movingleft = false;
 var footindex = false; 
 var didmovelast = false;
 var q = 0; 
+var clevel = 1;
+
 // defensive commenting: 
 // detect the keypresses (yea it is inefficient but i have plenty of storage to work with, ok)
         window.onkeydown = function (e) {
@@ -116,6 +140,12 @@ var q = 0;
             }
         }
         var magic = 1;
+
+
+
+
+                    //bctx.drawImage(bg, 0, 0, 1000, 750); 
+
         // preload all of them images
         var heart = new Image();
         heart.src = "backgrounds/heart.png";
@@ -137,14 +167,80 @@ var q = 0;
         linkl1.src = "backgrounds/linkleft1.png";
         var linkl2 = new Image();
         linkl2.src = "backgrounds/linkleft2.png";
+        var bg =  new Image();
+        bg.src = "backgrounds/bg1.png";
+        var bg2 =  new Image();
+        bg2.src = "backgrounds/bg2.png";
         const pcanvas = document.getElementById("player");
         const pctx = pcanvas.getContext("2d");
         linkdown1.onload = function() {
             pctx.drawImage(linkdown1, playerx, playery, 64, 64);
         } 
+//using fancy classes and arrays for hitboxes
+class Hitbox {
+    constructor(x, y, width, height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+    }
+
+    contains(px, py) {
+        return px >= this.x && px <= this.x + this.width &&
+               py >= this.y && py <= this.y + this.height;
+    }
+
+    overlaps(other) {
+        return !(this.x + this.width < other.x ||
+                 this.x > other.x + other.width ||
+                 this.y + this.height < other.y ||
+                 this.y > other.y + other.height);
+    }
+}
+
+let obstacles = [];
+const levels = {
+    1: [
+    new Hitbox(0, 0, 100, 330),
+    new Hitbox(100, 0, 100, 230),
+    new Hitbox(200, 0, 200, 50),
+    new Hitbox(350, 50, 50, 50),
+    new Hitbox(560, 0, 440, 340), 
+    new Hitbox(0, 410, 115, 340),
+    new Hitbox(0, 615, 1000, 135),
+    new Hitbox(870, 410, 130, 340)
+    ],
+    2: [
+        new Hitbox(150, 150, 150, 150),
+        new Hitbox(500, 300, 120, 80)
+    ]
+};
+// yaya simple level handling: 
+function loadLevel(level) {
+    obstacles = levels[level] || [];
+}
+
+function changeLevel(newLevel) {
+    currentLevel = newLevel;
+    loadLevel(newLevel);
+}
+
+
+function checkCollision(x, y, width, height) {
+    const playerHitbox = new Hitbox(x, y, width, height);
+    for (let i = 0; i < obstacles.length; i++) {
+        if (playerHitbox.overlaps(obstacles[i])) {
+            return true;
+        }
+    }
+    return false;
+}
         // The tick update loop. It has the answer to all questions. 
         function tick() {
+            // initial level load:
+            loadLevel(clevel);
 
+            
                // init them canvases         
             const bgcanvas = document.getElementById("background");
         const bctx = bgcanvas.getContext("2d");
@@ -152,36 +248,41 @@ var q = 0;
         const gctx = guicanvas.getContext("2d");
         const pcanvas = document.getElementById("player");
         const pctx = pcanvas.getContext("2d");
+        let coll = false;
+            let buff = 0; 
         // just delete the previous frame so u can redraw all the moving elements.
         pctx.clearRect(0, 0, 1000, 7000)
             // change links foot every 5 ticks if he is moving:
 
                 q++; 
-                console.log(q);
+
                 if (q == 15) {
                     footindex = !footindex; 
                     q = 0;
 
                 }
-            
-            // update player pos (yay no gravity physics to deal with!)
+            // collision check ig:
 
-            if (movingdown) {
-                playery += 2;
-                didmovelast = true;
-            } else if (movingleft) {
-                playerx -= 2;
-                didmovelast = true;
-            } else if (movingright) {
-                playerx += 2;
-                didmovelast = true;
-            } else if (movingup) {
-                playery -= 2;
-                didmovelast = true;
-            } else {
-                didmovelast = true;
-            }
-            console.log(footindex);
+            // update player pos if no collisions are detected (yay no gravity physics to deal with!)
+                let newX = playerx;
+    let newY = playery;
+                
+    if (movingdown) {
+        newY += 2;
+    } else if (movingleft) {
+        newX -= 2;
+    } else if (movingright) {
+        newX += 2;
+    } else if (movingup) {
+        newY -= 2;
+    }
+
+    // check for collision before updating the player's position
+    if (!checkCollision(newX, newY, 64, 64)) {
+        playerx = newX;
+        playery = newY;
+    }
+
             // render link (the player canvas is for all non-static objects)
 
             if (footindex) {
@@ -232,13 +333,7 @@ var q = 0;
 
 
             // draw background 
-            var bg =  new Image();
-            bg.src = "backgrounds/bg1.png";
-            // ok yeah yeah this is technically not synchronus with the rest of the tick, but its just visuals, so its fine. 
-            bg.onload = function () {
-                bctx.imageSmoothingEnabled = false;
-                bctx.drawImage(bg, 0, 0, 1000, 750); 
-            }   
+
             // draw GUI and stuff yeah. 
             gctx.fillStyle = "black";
             gctx.fillRect(0, 0, 1000, 200);
@@ -287,13 +382,49 @@ var q = 0;
             gctx.fillStyle = "white";
             gctx.font = "40px Courier New";
 
-
                 gctx.imageSmoothingEnabled = false; 
                 gctx.drawImage(icons, 50, 10, 40, 180);
                 gctx.fillText("X"+rupees.toString(), 95, 67);
                 gctx.fillText("X"+keys.toString(), 95, 130);
                 gctx.fillText("X"+orbs.toString(), 95, 167);
-            
+            // check if they need to move onto a different level:
+             if (playerx < 0) {
+
+            switch (clevel) {
+                case 1:
+                    playerx = 950;
+                    clevel = 2; 
+                    renderLevel();
+
+                    break;
+                default:
+                    alert("something broke.");
+            }
+        } else if (playerx > 950) {
+
+            switch (clevel) {
+                case 2:
+                    playerx = 1;
+                    clevel = 1; 
+                    playery = 336;
+                    renderLevel();
+                    break;
+                default:
+                    alert("something broke.");
+            }
+        }
+        switch(clevel) {
+            case 1:
+                bctx.imageSmoothingEnabled = false;
+                bctx.drawImage(bg, 0, 0, 1000, 750);
+                console.log("sigma");
+                break;
+            case 2:
+                bctx.imageSmoothingEnabled = false;
+                bctx.drawImage(bg2, 0, 0, 1000, 750);
+                console.log("no rizz");
+                break;
+        }
         }
     </script>
 </body>
